@@ -23,7 +23,7 @@
 // C PROJECT INCLUDES
 //#include "PlatformAssert.h"
 
-#include "stdafx.h"
+//#include "stdafx.h"
 // C++ PROJECT INCLUDES
 #include "Watchdog.hpp"
 #include <time.h>
@@ -31,15 +31,16 @@
 
 namespace CpfBsp
 {
-    static const uint32_t WDTCKS_DIV_BY_4 = 0x100000U;    // 0 0 0 1: PCLKB divided by 4
-    static const uint32_t WDTCKS_DIV_BY_64 = 0x400000U;    // 0 1 0 0 : PCLKB divided by 64
-    static const uint32_t WDTCKS_DIV_BY_128 = 0xF00000U;    // 1 1 1 1 : PCLKB divided by 128
-    static const uint32_t WDTCKS_DIV_BY_512 = 0x600000U;    // 0 1 1 0 : PCLKB divided by 512
-    static const uint32_t WDTCKS_DIV_BY_2048 = 0x700000U;    // 0 1 1 1 : PCLKB divided by 2048
-    static const uint32_t WDTCKS_DIV_BY_8192 = 0x800000U;    // 1 0 0 0 : PCLKB divided by 8192
-    void Watchdog::Init(WATCHDOG_CONFIG wcConfigureWatchdog)
+#ifdef ENGINEERING_BUILD
+	void Watchdog::Init(WATCHDOG_CONFIG wcConfigureWatchdog)
     {
-        static WATCHDOG_PERIOD_CYCLES         wpcCycleSelections[] = { 
+		bool bChangeTimeoutPeriod = false;
+		
+		WATCHDOG_PERIOD_CYCLES wpc = {};
+
+		if (wcConfigureWatchdog.ulExpirationPeriodMS)
+		{ 
+			static WATCHDOG_PERIOD_CYCLES         wpcCycleSelections[] = { 
                                                                        { (1024u * 4u),     WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_4},       // 2**10 * 2**2  == 2**12
                                                                        { (4096u * 4u),     WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_4 },      // 2**12 * 2**2  == 2**14
                                                                        { (8192u * 4u),     WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_4 },      // 2**13 * 2**2  == 2**15
@@ -65,32 +66,40 @@ namespace CpfBsp
                                                                        { (8192u * 8192u),  WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_8192 },   // 2**13 * 2**13 == 2**26
                                                                        { (16384u * 8192u), WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_8192 },  // 2**14 * 2**13 == 2**27
                                                                    };
-        static std::vector <WATCHDOG_PERIOD_CYCLES> CycleSelections(wpcCycleSelections, end(wpcCycleSelections));
+            static std::vector <WATCHDOG_PERIOD_CYCLES> CycleSelections(wpcCycleSelections, end(wpcCycleSelections));
 
-        uint32_t Clocks = CLOCKS_PER_SEC;
+            uint32_t Clocks = CLOCKS_PER_SEC;
 
-        uint32_t SysClock = 48000000;
+            uint32_t SysClock = 48000000;
 
-
-        uint32_t          ulNumberOfClockCyclesForWDT = (CLOCKS_PER_SEC / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
+            uint32_t          ulNumberOfClockCyclesForWDT = (CLOCKS_PER_SEC / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
         
-        ulNumberOfClockCyclesForWDT = (48000000 / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
+            ulNumberOfClockCyclesForWDT = (48000000 / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
 
-        for (std::vector<WATCHDOG_PERIOD_CYCLES>::iterator it = CycleSelections.begin(); it != CycleSelections.end(); ++it)
-        {
-            WATCHDOG_PERIOD_CYCLES wpc = *it;
-            
-            uint32_t check_val = wpc.ulCycleCount;
-            
-            if (check_val > ulNumberOfClockCyclesForWDT)
-            {
-                // Set clock cycles and divisor by what it points to
+			wpc = *end(wpcCycleSelections);
+			
+			for (std::vector<WATCHDOG_PERIOD_CYCLES>::iterator it = CycleSelections.begin(); it != CycleSelections.end(); ++it)
+			{
+				wpc = *it;
 
-                uint32_t ValueFound = check_val;
-            }
+				uint32_t check_val = wpc.ulCycleCount;
+
+				if (check_val > ulNumberOfClockCyclesForWDT)
+				{
+					// Set clock cycles and divisor by what it points to
+					uint32_t ValueFound = check_val;
+
+					bChangeTimeoutPeriod = true;
+
+					break;
+				}
+			}
         }
 
 
+
+
+#endif
 
     }
 };

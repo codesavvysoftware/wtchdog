@@ -22,7 +22,6 @@
 
 #ifndef __WATCHDOG_HPP__
 #define __WATCHDOG_HPP__
-
 // SYSTEM INCLUDES
 // (none)
 
@@ -35,16 +34,19 @@
 
 namespace CpfBsp
 {
-    template<typename T, size_t N>
-    T * end(T(&ra)[N]) {
+#ifdef ENGINEERING_BUILD
+	template<typename T, size_t N>
+    T * end(T(&ra)[N]) 
+	{
         return ra + N;
     }
-
+#endif
     class Watchdog
     {
     public:
 
-        typedef enum
+#ifdef ENGINEERING_BUILD
+		typedef enum
         {
             START,
             STOP,
@@ -52,12 +54,20 @@ namespace CpfBsp
         }
         WATCHDOG_ACTION;
 
+		typedef enum
+		{
+			WINDOW_UNCHANGED,
+			WINDOW_100,
+			WINDOW_75,
+			WINDOW_25
+		} WATCHDOG_REFRESH_WINDOW_PERCENTAGE;
+
         typedef struct
         {
-            uint32_t                 ulExpirationPeriodMS;
-            uint32_t                 ulWindowRefreshPeriodMS;
-            WATCHDOG_ACTION           waStartAction;
-            WATCHDOG_ACTION           waSleepAction;
+            uint32_t                            ulExpirationPeriodMS;
+			WATCHDOG_REFRESH_WINDOW_PERCENTAGE  wrwpRefreshPercentage;
+            WATCHDOG_ACTION                     waStartAction;
+            WATCHDOG_ACTION                     waSleepAction;
         }
         WATCHDOG_CONFIG;
 
@@ -68,12 +78,14 @@ namespace CpfBsp
             uint32_t                  ulClockDivisionRatio;
         }
         WATCHDOG_PERIOD_CYCLES;
+#endif
 
         //**************************************************************************************************************
         // Public methods
         //**************************************************************************************************************              
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef ENGINEERING_BUILD
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: Watchdog::Init
         ///
         /// Initialize watchdog HW module.
@@ -86,7 +98,7 @@ namespace CpfBsp
         /// @return none
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         void Init(WATCHDOG_CONFIG wcConfigureWatchdog);
-
+#endif
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: Watchdog::KickWatchdog
         ///
