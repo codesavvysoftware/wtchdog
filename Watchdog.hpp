@@ -56,16 +56,31 @@ namespace CpfBsp
 
 		typedef enum
 		{
-			WINDOW_UNCHANGED,
-			WINDOW_100,
-			WINDOW_75,
-			WINDOW_25
-		} WATCHDOG_REFRESH_WINDOW_PERCENTAGE;
+			WINDOW_START_100,
+			WINDOW_START_75,
+			WINDOW_START_50,
+			WINDOW_START_25
+		} WATCHDOG_REFRESH_WINDOW_START;
 
-        typedef struct
+		typedef enum
+		{
+			WINDOW_END_75,
+			WINDOW_END_50,
+			WINDOW_END_25,
+			WINDOW_END_00
+		} WATCHDOG_REFRESH_WINDOW_END;
+
+		typedef struct
+		{
+			WATCHDOG_REFRESH_WINDOW_START wrwsStart;
+			WATCHDOG_REFRESH_WINDOW_END   wrweEnd;
+		}
+		WATCHDOG_WINDOW_PARAMS;
+
+		typedef struct
         {
             uint32_t                            ulExpirationPeriodMS;
-			WATCHDOG_REFRESH_WINDOW_PERCENTAGE  wrwpRefreshPercentage;
+			WATCHDOG_WINDOW_PARAMS              wwpWindow;
             WATCHDOG_ACTION                     waStartAction;
             WATCHDOG_ACTION                     waSleepAction;
         }

@@ -94,9 +94,46 @@ namespace CpfBsp
 					break;
 				}
 			}
-        }
+        
+			uint32_t   ulWindowStart = 0;
+			uint32_t   ulWindowEnd = 0;
+			
+			if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_100)
+			{
+				ulWindowStart = WDTRPSS_100;
+			}
+			else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_75)
+			{
+				ulWindowStart = WDTRPSS_75;
+			}
+			else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_50)
+			{
+				ulWindowStart = WDTRPSS_50;
+			}
+			else
+			{
+				ulWindowStart = WDTRPSS_25;
+			}
 
+			if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_75)
+			{
+				ulWindowEnd = WDTRPES_75;
+			}
+			else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_50)
+			{
+				ulWindowEnd = WDTRPES_50;
+			}
+			else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_25)
+			{
+				ulWindowEnd = WDTRPES_25;
+			}
+			else
+			{
+				ulWindowEnd = WDTRPES_00;
+			}
 
+			
+		}
 
 
 #endif
