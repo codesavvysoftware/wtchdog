@@ -31,16 +31,20 @@
 
 namespace CpfBsp
 {
+    //RegMapWdt  * const Watchdog::m_pRegMapWdt = reinterpret_cast<RegMapWdt *>(REG_ADDRESS_WDT);
+    // FORWARD REFERENCES
 #ifdef ENGINEERING_BUILD
 	void Watchdog::Init(WATCHDOG_CONFIG wcConfigureWatchdog)
     {
-		bool bChangeTimeoutPeriod = false;
+        bool bChangeTimeoutPeriod = false;
 		
 		WATCHDOG_PERIOD_CYCLES wpc = {};
 
-		if (wcConfigureWatchdog.ulExpirationPeriodMS)
-		{ 
-			static WATCHDOG_PERIOD_CYCLES         wpcCycleSelections[] = { 
+        uint16_t uwCurrentControlWord = m_pRegMapWdt->uwControl;
+
+        if (wcConfigureWatchdog.wepExpirationPeriod.bChangeExpirationPeriod)
+        {
+            static WATCHDOG_PERIOD_CYCLES         wpcCycleSelections[] = {
                                                                        { (1024u * 4u),     WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_4},       // 2**10 * 2**2  == 2**12
                                                                        { (4096u * 4u),     WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_4 },      // 2**12 * 2**2  == 2**14
                                                                        { (8192u * 4u),     WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_4 },      // 2**13 * 2**2  == 2**15
@@ -65,76 +69,98 @@ namespace CpfBsp
                                                                        { (16384u * 2048u), WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_2048 },  // 2**14 * 2**11 == 2**25
                                                                        { (8192u * 8192u),  WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_8192 },   // 2**13 * 2**13 == 2**26
                                                                        { (16384u * 8192u), WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_8192 },  // 2**14 * 2**13 == 2**27
-                                                                   };
+            };
             static std::vector <WATCHDOG_PERIOD_CYCLES> CycleSelections(wpcCycleSelections, end(wpcCycleSelections));
 
             uint32_t Clocks = CLOCKS_PER_SEC;
 
             uint32_t SysClock = 48000000;
 
-            uint32_t          ulNumberOfClockCyclesForWDT = (CLOCKS_PER_SEC / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
+            uint32_t          ulNumberOfClockCyclesForWDT = (CLOCKS_PER_SEC / 1000) * wcConfigureWatchdog.wepExpirationPeriod.ulExpirationPeriodMS;
+
+            ulNumberOfClockCyclesForWDT = (48000000 / 1000) * wcConfigureWatchdog.wepExpirationPeriod.ulExpirationPeriodMS;
+
+            wpc = *end(wpcCycleSelections);
+
+            for (std::vector<WATCHDOG_PERIOD_CYCLES>::iterator it = CycleSelections.begin(); it != CycleSelections.end(); ++it)
+            {
+                wpc = *it;
+
+                uint32_t check_val = wpc.ulCycleCount;
+
+                if (check_val > ulNumberOfClockCyclesForWDT)
+                {
+                    // Set clock cycles and divisor by what it points to
+                    uint32_t ValueFound = check_val;
+
+                    bChangeTimeoutPeriod = true;
+
+                    break;
+                }
+            }
+
+            uwCurrentControlWord &= WDT_CONTROL_TIME_MASK;
+
+            uwCurrentControlWord |= wpc.uwClockDivisionRatio | wpc.uwPeriodSelection;
+        }
+
+        if (wcConfigureWatchdog.wwpWindow.bChangeWindowSettings)
+        {
+            uint16_t   uwWindowStart = 0;
+
+            uint16_t   uwWindowEnd = 0;
+
+            if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_100)
+            {
+                uwWindowStart = WDTRPSS_100;
+            }
+            else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_75)
+            {
+                uwWindowStart = WDTRPSS_75;
+            }
+            else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_50)
+            {
+                uwWindowStart = WDTRPSS_50;
+            }
+            else
+            {
+                uwWindowStart = WDTRPSS_25;
+            }
+
+            if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_75)
+            {
+                uwWindowEnd = WDTRPES_75;
+            }
+            else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_50)
+            {
+                uwWindowEnd = WDTRPES_50;
+            }
+            else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_25)
+            {
+                uwWindowEnd = WDTRPES_25;
+            }
+            else
+            {
+                uwWindowEnd = WDTRPES_00;
+            }
+
+            uwCurrentControlWord &= WDT_CONTROL_WINDOW_MASK;
+
+            uwCurrentControlWord |= uwWindowStart | uwWindowEnd;
+        }
         
-            ulNumberOfClockCyclesForWDT = (48000000 / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
-
-			wpc = *end(wpcCycleSelections);
-			
-			for (std::vector<WATCHDOG_PERIOD_CYCLES>::iterator it = CycleSelections.begin(); it != CycleSelections.end(); ++it)
-			{
-				wpc = *it;
-
-				uint32_t check_val = wpc.ulCycleCount;
-
-				if (check_val > ulNumberOfClockCyclesForWDT)
-				{
-					// Set clock cycles and divisor by what it points to
-					uint32_t ValueFound = check_val;
-
-					bChangeTimeoutPeriod = true;
-
-					break;
-				}
-			}
-        
-			uint32_t   ulWindowStart = 0;
-			uint32_t   ulWindowEnd = 0;
-			
-			if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_100)
-			{
-				ulWindowStart = WDTRPSS_100;
-			}
-			else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_75)
-			{
-				ulWindowStart = WDTRPSS_75;
-			}
-			else if (wcConfigureWatchdog.wwpWindow.wrwsStart == WINDOW_START_50)
-			{
-				ulWindowStart = WDTRPSS_50;
-			}
-			else
-			{
-				ulWindowStart = WDTRPSS_25;
-			}
-
-			if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_75)
-			{
-				ulWindowEnd = WDTRPES_75;
-			}
-			else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_50)
-			{
-				ulWindowEnd = WDTRPES_50;
-			}
-			else if (wcConfigureWatchdog.wwpWindow.wrweEnd == WINDOW_END_25)
-			{
-				ulWindowEnd = WDTRPES_25;
-			}
-			else
-			{
-				ulWindowEnd = WDTRPES_00;
-			}
-
-			
+        if (    
+                wcConfigureWatchdog.wepExpirationPeriod.bChangeExpirationPeriod 
+             || wcConfigureWatchdog.wwpWindow.bChangeWindowSettings
+           )
+        {
+           // Configure the control register
+           m_pRegMapWdt->uwControl = uwCurrentControlWord;
 		}
 
+        uint8_t ubCurrentResetOptionSelection = m_pRegMapWdt->ubResetControl;
+
+        //if ( )
 
 #endif
 
