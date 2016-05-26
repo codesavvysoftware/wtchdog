@@ -21,96 +21,81 @@
 // (none)
 
 // C PROJECT INCLUDES
-#include "PlatformAssert.h"
+//#include "PlatformAssert.h"
 
+#include "stdafx.h"
 // C++ PROJECT INCLUDES
 #include "Watchdog.hpp"
 #include <time.h>
+#include <vector>
 
 namespace CpfBsp
 {
-    // FORWARD REFERENCES
-    RegMapWdt * const Watchdog::m_pRegMapWdt = reinterpret_cast<RegMapWdt *>(REG_ADDRESS_WDT);
-    RegMapIWdt * const Watchdog::m_pRegMapIWdt = reinterpret_cast<RegMapIWdt *>(REG_ADDRESS_IWDT);
-
-    //**********************************************************************************************************************
-    // PUBLIC METHODS
-    //**********************************************************************************************************************
-
-    // Watchdog Initialization
-    void Watchdog::Init(WATCHDOG_CONFG wcConfigureWatchdog)
+    static const uint32_t WDTCKS_DIV_BY_4 = 0x100000U;    // 0 0 0 1: PCLKB divided by 4
+    static const uint32_t WDTCKS_DIV_BY_64 = 0x400000U;    // 0 1 0 0 : PCLKB divided by 64
+    static const uint32_t WDTCKS_DIV_BY_128 = 0xF00000U;    // 1 1 1 1 : PCLKB divided by 128
+    static const uint32_t WDTCKS_DIV_BY_512 = 0x600000U;    // 0 1 1 0 : PCLKB divided by 512
+    static const uint32_t WDTCKS_DIV_BY_2048 = 0x700000U;    // 0 1 1 1 : PCLKB divided by 2048
+    static const uint32_t WDTCKS_DIV_BY_8192 = 0x800000U;    // 1 0 0 0 : PCLKB divided by 8192
+    void Watchdog::Init(WATCHDOG_CONFIG wcConfigureWatchdog)
     {
-#ifdef _DEBUG
-        uint32_t          ulNumberOfClockCyclesForWDT = CLOCKS_PER_SEC * 1000 * wcConfigureWatchdog.lExpirationPeriodMS;
+        static WATCHDOG_PERIOD_CYCLES         wpcCycleSelections[] = { 
+                                                                       { (1024u * 4u),     WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_4},       // 2**10 * 2**2  == 2**12
+                                                                       { (4096u * 4u),     WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_4 },      // 2**12 * 2**2  == 2**14
+                                                                       { (8192u * 4u),     WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_4 },      // 2**13 * 2**2  == 2**15
+                                                                       { (1024u * 64u),    WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_64 },     // 2**10 * 2**6  == 2**16
+                                                                       { (16384u * 4u),    WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_4 },     // 2**14 * 2**2  == 2**16
+                                                                       { (1024u * 128u),   WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_128 },    // 2**10 * 2**7  == 2**17
+                                                                       { (4096u * 64u),    WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_64 },     // 2**12 * 2**6  == 2**18
+                                                                       { (1024u * 512u),   WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_512 },    // 2**10 * 2**9  == 2**19
+                                                                       { (4096u * 128u),   WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_128 },    // 2**12 * 2**7  == 2**19
+                                                                       { (8192u * 64u),    WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_64 },     // 2**13 * 2**6  == 2**19
+                                                                       { (8192u * 128u),   WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_128 },    // 2**13 * 2**7  == 2**20 
+                                                                       { (16384u * 64u),   WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_64 },    // 2**14 * 2**6  == 2**20
+                                                                       { (4096u * 512u),   WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_512 },    // 2**12 * 2**9  == 2**21
+                                                                       { (16384u * 128u),  WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_128 },   // 2**14 * 2**7  == 2**21
+                                                                       { (8192u * 512u),   WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_512 },    // 2**13 * 2**9  == 2**22
+                                                                       { (1024u * 2048u),  WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_2048 },   // 2**10 * 2**12 == 2**22
+                                                                       { (1024u * 8192u),  WDTTOPS_CYCLES_1024, WDTCKS_DIV_BY_8192 },   // 2**10 * 2**13 == 2**23
+                                                                       { (4096u * 2048u),  WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_2048 },   // 2**12 * 2**11 == 2**23
+                                                                       { (16384u * 512u),  WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_512 },   // 2**14 * 2**9  == 2**23
+                                                                       { (8192u * 2048u),  WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_2048 },   // 2**13 * 2**11 == 2**24
+                                                                       { (4096u * 8192u),  WDTTOPS_CYCLES_4096, WDTCKS_DIV_BY_8192 },   // 2**12 * 2**13 == 2**25
+                                                                       { (16384u * 2048u), WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_2048 },  // 2**14 * 2**11 == 2**25
+                                                                       { (8192u * 8192u),  WDTTOPS_CYCLES_8192, WDTCKS_DIV_BY_8192 },   // 2**13 * 2**13 == 2**26
+                                                                       { (16384u * 8192u), WDTTOPS_CYCLES_16384, WDTCKS_DIV_BY_8192 },  // 2**14 * 2**13 == 2**27
+                                                                   };
+        static std::vector <WATCHDOG_PERIOD_CYCLES> CycleSelections(wpcCycleSelections, end(wpcCycleSelections));
 
-        uint32_t          ulWDTCycles = 0;
+        uint32_t Clocks = CLOCKS_PER_SEC;
 
-        static const uint32_t WDTTOPS_CYCLES_1024 = 0;          // 0 0 : 1024 cycles(03FFh)
-        static const uint32_t WDTTOPS_CYCLES_4096 = 0x40000U;   // 0 1 : 4096 cycles(0FFFh)
-        static const uint32_t WDTTOPS_CYCLES_8192 = 0x80000U;   // 1 0 : 8192 cycles(1FFFh)
-        static const uint32_t WDTTOPS_CYCLES_16384 = 0xC0000U;   // 1 1 : 16384 cycles(3FFFh
-        if (ulNumberOfClockCycles >= 16384)
-        {
-        }
-        else if (ulNumberOfClockCycles >= 8192)
-        {
-        }
-        else if (ulNumberOfClockCycles >= 4096)
-        {
-        }
-        else if (ulNumberOfClockCycles >= 1024)
-        {
-        }
+        uint32_t SysClock = 48000000;
 
+
+        uint32_t          ulNumberOfClockCyclesForWDT = (CLOCKS_PER_SEC / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
         
-        m_pRegMapWdt->uwControl = NOMINAL_WDT_SETTING;
+        ulNumberOfClockCyclesForWDT = (48000000 / 1000) * wcConfigureWatchdog.ulExpirationPeriodMS;
 
-        // Clear out any lingering reset occurred bits
-        m_pRegMapWdt->uwStatus = WDT_CLEAR_STATUS;
+        for (std::vector<WATCHDOG_PERIOD_CYCLES>::iterator it = CycleSelections.begin(); it != CycleSelections.end(); ++it)
+        {
+            WATCHDOG_PERIOD_CYCLES wpc = *it;
+            
+            uint32_t check_val = wpc.ulCycleCount;
+            
+            if (check_val > ulNumberOfClockCyclesForWDT)
+            {
+                // Set clock cycles and divisor by what it points to
 
-        // NMI when timer times out
-        m_pRegMapWdt->ubResetControl = WDT_CLEAR_STATUS;
+                uint32_t ValueFound = check_val;
+            }
+        }
 
-        // Stop Counting in sleep mode
-        m_pRegMapWdt->ubCountStopControl = WDT_STOP_COUNT_IN_SLEEP_MODES;
 
-        // Start the watchdog
-        KickWatchdog();
-
-        
-#endif
-    }
-
-    // Kick watchdog timer
-    void Watchdog::KickWatchdog(void)
-    {
-#ifdef _DEBUG
-        m_pRegMapWdt->ubRefresh = FIRST_REFRESH_BYTE;
-
-        m_pRegMapWdt->ubRefresh = SECOND_REFRESH_BYTE;
-#else
-        m_pRegMapIWdt->ubRefresh = FIRST_REFRESH_BYTE;
-
-        m_pRegMapIWdt->ubRefresh = SECOND_REFRESH_BYTE;
-#endif
-    }
-
-    // Check whether the watchdog timer was reset
-    bool Watchdog::IsWatchdogReset(void)
-    {
-
-        uint16_t  uwStatusOfWdt = 0;
-#ifdef _DEBUG
-        uwStatusOfWdt = m_pRegMapWdt->uwStatus;
-#else
-        uwStatusOfWdt = m_pRegMapIWdt->uwStatus;
-#endif
-        return (uwStatusOfWdt & WDT_STATUS_ERR_MASK);
 
     }
 };
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // End of file.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
