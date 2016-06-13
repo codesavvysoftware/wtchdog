@@ -16,7 +16,8 @@ namespace SignalChain
     /// @ingroup SignalChain
     ///
     /// @par Copyright (c) 2016 Rockwell Automation Technolgies, Inc.  All rights reserved.
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    class RateOfChange
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    class RateOfChange
     {
     public:
         //**************************************************************************************************************
@@ -54,9 +55,16 @@ namespace SignalChain
         ///
         /// @return  None
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        virtual ~RateOfChange() {}
+        ~RateOfChange() {}
 
 
+        typedef struct
+        {
+            float     fPreviousValue;
+
+            uint32_t  ulPreviousTimestampUs;
+        }
+        RateOfChangeParams;
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: RateOfChange::RateOfChangeUs
         ///
@@ -96,7 +104,7 @@ namespace SignalChain
                 fRateOfChange = (fValue - rateOfChangeData.fPreviousValue) / static_cast<float>(ulDifference);
             }
 
-            rateOfChangeData.ulPreviousTimestampUs = timestampUs;
+            rateOfChangeData.ulPreviousTimestampUs = ulTimestampUs;
 
             rateOfChangeData.fPreviousValue = fValue;
 
@@ -127,7 +135,7 @@ namespace SignalChain
 
             if (fChangeRateSec != INFINITY)
             {
-                fChangeRateSec *= CONVERSION_US_TO_MS;
+                fChangeRateSec *= 1000.0;// CONVERSION_US_TO_MS;
             }
 
             return fChangeRateSec;
@@ -157,23 +165,16 @@ namespace SignalChain
 
             if (fChangeRateSec != INFINITY)
             {
-                fChangeRateSec *= CONVERSION_US_TO_SEC;
+                fChangeRateSec *= 1000000.0;// CONVERSION_US_TO_SEC;
             }
 
             return fChangeRateSec;
         }
 
-        typedef struct
-        {
-            float     fPreviousValue;
-
-            uint32_t  ulPreviousTimestampUs;
-        } 
-        RateOfChangeParams;
     private:
-        const float CONVERSION_US_TO_SEC;
+        //const float CONVERSION_US_TO_SEC;
 
-        const float CONVERSION_US_TO_MS;
+        //const float CONVERSION_US_TO_MS;
 
 
     };
