@@ -88,9 +88,8 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in microseconds calculated.
         /// 
-        /// @param  fValue                 Current value 
-        /// @param  ulTimestampUs          Current Timestamp in microseconds
-        /// @param  RateOfChangeParams     Peceding timestamp and value needed for computing the rate of change.          
+		/// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
+		/// @param  RateOfChangeParams       Preceding timestamp and value needed for calculating the rate of change.          
         ///
         /// @return Calculated rate of change in units per microsecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,8 +107,8 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in milliseconds calculated.
         /// 
-		/// @param  currentRateOfChangeData  Current timestamp and value needed for computing the rate of change.
-		/// @param  prevRateOfChangeData     Preceding timestamp and value needed for computing the rate of change.          
+		/// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
+		/// @param  prevRateOfChangeData     Preceding timestamp and value needed for calculating the rate of change.         
 		///
         /// @return Calculated rate of change in units per millisecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,8 +126,8 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in seconds calculated.
         /// 
-        /// @param  currentRateOfChangeData  Current timestamp and value needed for computing the rate of change.
-        /// @param  prevRateOfChangeData     Preceding timestamp and value needed for computing the rate of change.          
+        /// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
+        /// @param  prevRateOfChangeData     Preceding timestamp and value needed for calculating the rate of change.          
         ///
         /// @return Calculated rate of change in units per second
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

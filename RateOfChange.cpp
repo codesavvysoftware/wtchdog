@@ -43,8 +43,18 @@ namespace SignalChain
 	{
 		uint32_t ulDifference = 0;
 
+		// Init to INFINITY in case the current and previous timestamnps are equal which would result in a divide by Zero
 		float fRateOfChange = INFINITY;
 
+		//
+		// If the current timestamp is less than the previous timestamp assume an overflow of the 32 bit fixed point number 
+		// occurred during the elapsed time from the previous timestamp to the current time stamp.
+		// The elapsed time is:
+		//
+		// largest unsigned int value - previous time stamp this is the time that elapsed before the overflow.
+		// +1 for the overflow from the larget value to 0.
+		// + the current timestamp to capture the amount of the overflow
+		//
 		if (currentRateOfChangeData.ulTimestampUs < prevRateOfChangeData.ulTimestampUs)
 		{
 			ulDifference = ULONG_MAX - prevRateOfChangeData.ulTimestampUs + 1 + currentRateOfChangeData.ulTimestampUs;
@@ -55,11 +65,19 @@ namespace SignalChain
 		}
 
 
+		//
+		// Do the division if the denominator is non zero.
+		//
 		if (ulDifference != 0)
 		{
 			fRateOfChange = (currentRateOfChangeData.fValue - prevRateOfChangeData.fValue) / static_cast<float>(ulDifference);
 		}
 
+		//
+		// Update the previous timestamp and unit values for the caller 
+		// as now the provious timestamp and unit values are the current values upon input
+		// since the calculation is complete.
+		//
 		prevRateOfChangeData.ulTimestampUs = currentRateOfChangeData.ulTimestampUs;
 
 		prevRateOfChangeData.fValue = currentRateOfChangeData.fValue;
