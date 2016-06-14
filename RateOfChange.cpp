@@ -39,7 +39,7 @@ namespace SignalChain
 	/// Calculate the rate of change between the previous value and the current value in units per microsecond.
 	///
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	float RateOfChange::CalcRateOfChangeUs(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData)
+	float RateOfChange::CalcRateOfChangeUs(float fCurrentValue, uint32_t ulCurrentTimestampUs)
 	{
 		uint32_t ulDifference = 0;
 
@@ -57,11 +57,11 @@ namespace SignalChain
 		//
 		if (currentRateOfChangeData.ulTimestampUs < prevRateOfChangeData.ulTimestampUs)
 		{
-			ulDifference = ULONG_MAX - prevRateOfChangeData.ulTimestampUs + 1 + currentRateOfChangeData.ulTimestampUs;
+			ulDifference = ULONG_MAX - m_ulPreviousTimestampUs + 1 + ulCurrentTimestampUs;
 		}
 		else
 		{
-			ulDifference = currentRateOfChangeData.ulTimestampUs - prevRateOfChangeData.ulTimestampUs;
+			ulDifference = ulCurrentTimestampUs - m_ulPreviousTimestampUs;
 		}
 
 
@@ -70,7 +70,7 @@ namespace SignalChain
 		//
 		if (ulDifference != 0)
 		{
-			fRateOfChange = (currentRateOfChangeData.fValue - prevRateOfChangeData.fValue) / static_cast<float>(ulDifference);
+			fRateOfChange = (fCurrentValue - m_fPreviousValue) / static_cast<float>(ulDifference);
 		}
 
 		//
@@ -78,9 +78,9 @@ namespace SignalChain
 		// as now the provious timestamp and unit values are the current values upon input
 		// since the calculation is complete.
 		//
-		prevRateOfChangeData.ulTimestampUs = currentRateOfChangeData.ulTimestampUs;
+		m_ulPreviousTimestampUs = ulCurrentTimestampUs;
 
-		prevRateOfChangeData.fValue = currentRateOfChangeData.fValue;
+		m_fPreviousValue = fCurrentValue;
 
 		return fRateOfChange;
 	}
@@ -91,9 +91,9 @@ namespace SignalChain
 	/// Calculate the rate of change between the previous value and the current value in units per millisecond.
 	///
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	float RateOfChange::CalcRateOfChangeMs(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData)
+	float RateOfChange::CalcRateOfChangeMs(float fCurrentValue, uint32_t ulCurrentTimestampUs)
 	{
-		float fChangeRateSec = CalcRateOfChangeUs(currentRateOfChangeData, prevRateOfChangeData);
+		float fChangeRateSec = CalcRateOfChangeUs(fCurrentValue, ulCurrentTimestampUs);
 
 		if (fChangeRateSec != INFINITY)
 		{
@@ -110,11 +110,11 @@ namespace SignalChain
 	///
 	/// @return Computed rate of change in units per second
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	float RateOfChange::CalcRateOfChangeSec(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData)
-	{
-		float fChangeRateSec = CalcRateOfChangeUs(currentRateOfChangeData, prevRateOfChangeData);
+	float RateOfChange::CalcRateOfChangeSec(float fCurrentValue, uint32_t ulCurrentTimestampUs)
+    {
+        float fChangeRateSec = CalcRateOfChangeUs(fCurrentValue, ulCurrentTimestampUs);
 
-		if (fChangeRateSec != INFINITY)
+        if (fChangeRateSec != INFINITY)
 		{
 			fChangeRateSec *= CONVERSION_US_TO_SEC;
 		}

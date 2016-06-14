@@ -27,7 +27,7 @@
 // (none)
 namespace SignalChain
 {
-    class RateOfChange
+    class RateOfChange 
     {
     public:
         //**************************************************************************************************************
@@ -50,7 +50,8 @@ namespace SignalChain
         ///
         /// @return  None
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        RateOfChange() {}
+        RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestamp(0)
+        {}
         
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: RateOfChange::~RateOfChange
@@ -68,13 +69,6 @@ namespace SignalChain
         ~RateOfChange() {}
 
 
-        typedef struct
-        {
-            float     fValue;
-
-            uint32_t  ulTimestampUs;
-        }
-        RateOfChangeParams;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: RateOfChange::CalcRateOfChangeUs
@@ -88,12 +82,12 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in microseconds calculated.
         /// 
-		/// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
-		/// @param  RateOfChangeParams       Preceding timestamp and value needed for calculating the rate of change.          
+        /// @param  fCurrentValue          Current value for calculating rate of change.
+        /// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
         ///
         /// @return Calculated rate of change in units per microsecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeUs(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData);
+		float CalcRateOfChangeUs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: RateOfChange::CalcRateOfChangeMs
@@ -107,12 +101,12 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in milliseconds calculated.
         /// 
-		/// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
-		/// @param  prevRateOfChangeData     Preceding timestamp and value needed for calculating the rate of change.         
+		/// @param  fCurrentValue          Current value for calculating rate of change.
+		/// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
 		///
         /// @return Calculated rate of change in units per millisecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeMs(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData);
+		float CalcRateOfChangeMs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// FUNCTION NAME: RateOfChange::CalcRateOfChangeSec
@@ -126,12 +120,18 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in seconds calculated.
         /// 
-        /// @param  currentRateOfChangeData  Current timestamp and value needed for calculating the rate of change.
-        /// @param  prevRateOfChangeData     Preceding timestamp and value needed for calculating the rate of change.          
+        /// @param  fCurrentValue          Current value for calculating rate of change.
+        /// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
         ///
         /// @return Calculated rate of change in units per second
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeSec(RateOfChangeParams currentRateOfChangeData, RateOfChangeParams & prevRateOfChangeData);
+		float CalcRateOfChangeSec((float fCurrentValue, uint32_t ulCurrentTimestampUs));
+    private:
+        // Previous Value
+        float    m_fPreviousValue;
+
+        // Previous timestamp
+        uint32_t m_ulPreviousTimestampUs;
     };
 }
 #endif //__WATCHDOG_HPP__
