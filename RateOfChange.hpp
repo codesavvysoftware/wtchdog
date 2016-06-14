@@ -50,7 +50,7 @@ namespace SignalChain
         ///
         /// @return  None
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestamp(0)
+        RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestampUs(0)
         {}
         
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ namespace SignalChain
         ///
         /// @return Calculated rate of change in units per second
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeSec((float fCurrentValue, uint32_t ulCurrentTimestampUs));
+		float CalcRateOfChangeSec(float fCurrentValue, uint32_t ulCurrentTimestampUs);
     private:
         // Previous Value
         float    m_fPreviousValue;

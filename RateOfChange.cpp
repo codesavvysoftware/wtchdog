@@ -55,7 +55,7 @@ namespace SignalChain
 		// +1 for the overflow from the larget value to 0.
 		// + the current timestamp to capture the amount of the overflow
 		//
-		if (currentRateOfChangeData.ulTimestampUs < prevRateOfChangeData.ulTimestampUs)
+		if (ulCurrentTimestampUs < m_ulPreviousTimestampUs)
 		{
 			ulDifference = ULONG_MAX - m_ulPreviousTimestampUs + 1 + ulCurrentTimestampUs;
 		}
