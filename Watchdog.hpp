@@ -51,10 +51,10 @@ namespace CpfBsp
 /// derived from the system clock.  The independent watchdog timer operation is completely configured by the OFS0 
 /// register that is located in flash memory.  The specific address is contained in the appropriate Renesas Synergy
 /// reference manual.  The OFS0 register is a read-only register and thus is not configurable at runtime.  Please 
-/// refer to the appropriate section on the OFS0 operations (chapter 6 in S3A7 and chapter 7 in S124 manuals) for
-/// a detailed description.  Those descriptions are very good and complete, I really can't improve on them. 
-/// There is a selection for both watchdog timers for having the timer reset upon a watchdog timeout or generate an
-/// interrupt.  Generating the reset is the preferred choice for the following reasons:
+/// refer to the appropriate section on the OFS0 operations (chapter 7 in S3A7 and chapter 6 in S124 manuals) for
+/// a detailed description.  There is a selection for both watchdog timers for having the timer reset upon a 
+/// watchdog timeout or generate an interrupt.  Generating the reset is the preferred choice for the following 
+//  reasons:
 /// 1.  At reset time the watchdog configuration register, OFS0, has to be configured.
 /// 2.  Configuration of the independent watchdog timer is not possible under program control.
 /// 3.  After a reset, during system boot time, the watchdog needs to be running in order to catch failures during
