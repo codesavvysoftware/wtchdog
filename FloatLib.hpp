@@ -18,7 +18,6 @@
 
 // SYSTEM INCLUDES
 #include <stdint.h>
-#include <limits>
 
 // C PROJECT INCLUDES
 // (none)
@@ -40,9 +39,8 @@ enum FloatType
     FLP_SUBNORMAL,
     FLP_ZERO
 };
-
-static const float FLOAT_INFINITY = std::numeric_limits<float>::infinity();
-static const float FLOAT_NAN = std::numeric_limits<float>::signaling_NaN();
+static const float FLOAT_INFINITY = 0x7F800000U;
+static const float FLOAT_NAN = 0x7FFFFFFFU;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  FUNCTION NAME: IsNan

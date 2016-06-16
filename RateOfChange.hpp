@@ -1,10 +1,10 @@
-#ifndef RATE_OF_CHANGE_HPP
-#define RATE_OF_CHANGE_HPP
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @file RateofChang.hpp
+/// @file RateofChange.hpp
 ///
-/// This class exposes methods for computing the rate of change in microseconds, milleseconds, and seconds.  There also
-/// is a method for delta time between two values that are inputs to the method
+/// For computing rates of change
+///
+/// @par Full Description
+/// Class header for the RateOfChange class.
 /// 
 ///
 /// @if REVISION_HISTORY_INCLUDED
@@ -16,6 +16,10 @@
 ///
 /// @par Copyright (c) 2016 Rockwell Automation Technolgies, Inc.  All rights reserved.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+#if !defined(RATE_OF_CHANGE_HPP)
+#define RATE_OF_CHANGE_HPP
+
 // SYSTEM INCLUDES
 #include <stdint.h>
 #include <limits>
@@ -25,53 +29,52 @@
 
 // C++ PROJECT INCLUDES
 // (none)
+
 namespace SignalChain
 {
-    class RateOfChange 
-    {
+
+    // FORWARD REFERENCES
+    // (none)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CLASS NAME: RateOfChange
+    ///
+    /// For calculating rates of change
+    /// 
+    /// @par Full Description
+    /// This class exposes methods for computing the rate of change in microseconds, milleseconds, and seconds.  There also
+    /// is a method for delta time between two values that are inputs to the method
+    ///
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class RateOfChange 
+{
     public:
+        //**************************************************************************************************************
+        // Public definitions
+        //**************************************************************************************************************
+        // (none)
+        
         //**************************************************************************************************************
         // Public methods
         //**************************************************************************************************************
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// FUNCTION NAME: RateOfChange::RateOfChange
-        ///
-        /// Constructor
-        ///
-        /// @par Full Description
-        /// Class contructor for computing the rate of change in seconds, milliseconds, and microseconds.
-        /// along with a method for computing delta time.
-        ///
-        /// @pre    none
-        /// @post   class created
-        /// 
-        /// @param  none
-        ///
-        /// @return  None
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestampUs(0)
-        {}
-        
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// FUNCTION NAME: RateOfChange::~RateOfChange
-        ///
-        /// Destrcutor
-        ///
-        /// @pre    RateOfChange object created.
-        /// @post   RateOfChange object destroyed.
-        /// 
-        /// @par Full Description
-        /// Destructor for objects created from the rate of change class.
-        ///
-        /// @return  None
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ~RateOfChange() {}
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/// METHOD NAME: RateOfChange::RateOfChange
+		///
+		/// Constructor 
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		RateOfChange();
 
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/// METHOD NAME: ClassName::~ClassName
+		///
+		/// Destructor 
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		~RateOfChange() {}
 
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// FUNCTION NAME: RateOfChange::CalcRateOfChangeUs
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// METHOD NAME: RateOfChange::CalcRateOfChangeUs
         ///
         /// Calculate the rate of change between the previous value and the current value in units per microsecond.
         ///
@@ -82,15 +85,15 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in microseconds calculated.
         /// 
-        /// @param  fCurrentValue          Current value for calculating rate of change.
-        /// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
+        /// @param  [in]  fCurrentValue          Current value for calculating rate of change.
+        /// @param  [in]  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
         ///
         /// @return Calculated rate of change in units per microsecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeUs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
+        float CalcRateOfChangeUs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// FUNCTION NAME: RateOfChange::CalcRateOfChangeMs
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// METHOD NAME: RateOfChange::CalcRateOfChangeMs
         ///
         /// Calculate the rate of change between the previous value and the current value in units per millisecond.
         ///
@@ -101,15 +104,15 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in milliseconds calculated.
         /// 
-		/// @param  fCurrentValue          Current value for calculating rate of change.
-		/// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
-		///
+        /// @param  [in]  fCurrentValue          Current value for calculating rate of change.
+        /// @param  [in]  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
+        ///
         /// @return Calculated rate of change in units per millisecond
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeMs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
+        float CalcRateOfChangeMs(float fCurrentValue, uint32_t ulCurrentTimestampUs);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// FUNCTION NAME: RateOfChange::CalcRateOfChangeSec
+        /// METHOD NAME: RateOfChange::CalcRateOfChangeSec
         ///
         /// Calculate the rate of change between the previous value and the current value in units per second.
         ///
@@ -120,21 +123,36 @@ namespace SignalChain
         /// @pre    none.
         /// @post   Rate of change in seconds calculated.
         /// 
-        /// @param  fCurrentValue          Current value for calculating rate of change.
-        /// @param  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
+        /// @param  [in]  fCurrentValue          Current value for calculating rate of change.
+        /// @param  [in]  ulCurrentTimeStampUs   Current timestamp in microseconds for calculating rate of change.         
         ///
         /// @return Calculated rate of change in units per second
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		float CalcRateOfChangeSec(float fCurrentValue, uint32_t ulCurrentTimestampUs);
+        float CalcRateOfChangeSec(float fCurrentValue, uint32_t ulCurrentTimestampUs);
     private:
+        //**************************************************************************************************************
+        // Private definitions
+        //**************************************************************************************************************
+        
+        // (none)
+
+        //**************************************************************************************************************
+        // Private methods
+        //**************************************************************************************************************
+
+        // (none)
+        //**************************************************************************************************************
+        // Member variables
+        //**************************************************************************************************************
+
         // Previous Value
         float    m_fPreviousValue;
 
         // Previous timestamp
         uint32_t m_ulPreviousTimestampUs;
-    };
-}
-#endif //RATE_OF_CHANGE_HPP
+};
+} // SignalChain
+#endif // #if !defined(RATE_OF_CHANGE_HPP)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // End of file.
