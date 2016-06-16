@@ -23,6 +23,7 @@
 
 // C++ PROJECT INCLUDES
 #include "RateOfChange.hpp"
+#include "FloatLib.hpp"
 
 namespace SignalChain
 {
@@ -44,7 +45,7 @@ namespace SignalChain
 		uint32_t ulDifference = 0;
 
 		// Init to INFINITY in case the current and previous timestamnps are equal which would result in a divide by Zero
-		float fRateOfChange = INFINITY;
+        float fRateOfChange = App::FLOAT_INFINITY; 
 
 		//
 		// If the current timestamp is less than the previous timestamp assume an overflow of the 32 bit fixed point number 
