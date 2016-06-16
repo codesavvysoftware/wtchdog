@@ -38,7 +38,7 @@ namespace SignalChain
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// RateOfChange::RateOfChange
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-RateOfChange::RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestampUs(0)
+RateOfChange::RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestampUs(0), m_bInitialCall(true)
 {
 
 }
@@ -48,38 +48,47 @@ RateOfChange::RateOfChange() : m_fPreviousValue(0.0f), m_ulPreviousTimestampUs(0
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 float RateOfChange::CalcRateOfChangeUs(float fCurrentValue, uint32_t ulCurrentTimestampUs)
 {
-    uint32_t ulDifference = 0;
 
-    // Init to INFINITY in case the current and previous timestamnps are equal which would result in a divide by Zero
-    float fRateOfChange = App::FLOAT_INFINITY;
+	float fRateOfChange = 0.0f;
 
-    //
-    // If the current timestamp is less than the previous timestamp assume an overflow of the 32 bit fixed point number 
-    // occurred during the elapsed time from the previous timestamp to the current time stamp.
-    // The elapsed time is:
-    //
-    // largest unsigned int value - previous time stamp this is the time that elapsed before the overflow.
-    // +1 for the overflow from the larget value to 0.
-    // + the current timestamp to capture the amount of the overflow
-    //
-    if (ulCurrentTimestampUs < m_ulPreviousTimestampUs)
+	if (m_bInitialCall)
     {
-        ulDifference = ULONG_MAX - m_ulPreviousTimestampUs + 1 + ulCurrentTimestampUs;
+        m_bInitialCall = false;
     }
     else
     {
-        ulDifference = ulCurrentTimestampUs - m_ulPreviousTimestampUs;
+        uint32_t ulDifference = 0;
+
+        // Init to INFINITY in case the current and previous timestamnps are equal which would result in a divide by Zero
+        fRateOfChange = App::FLOAT_INFINITY;
+
+        //
+        // If the current timestamp is less than the previous timestamp assume an overflow of the 32 bit fixed point number 
+        // occurred during the elapsed time from the previous timestamp to the current time stamp.
+        // The elapsed time is:
+        //
+        // largest unsigned int value - previous time stamp this is the time that elapsed before the overflow.
+        // +1 for the overflow from the larget value to 0.
+        // + the current timestamp to capture the amount of the overflow
+        //
+        if (ulCurrentTimestampUs < m_ulPreviousTimestampUs)
+        {
+            ulDifference = ULONG_MAX - m_ulPreviousTimestampUs + 1 + ulCurrentTimestampUs;
+        }
+        else
+        {
+            ulDifference = ulCurrentTimestampUs - m_ulPreviousTimestampUs;
+        }
+
+        //
+        // Do the division if the denominator is non zero.
+        //
+        if (ulDifference != 0)
+        {
+            fRateOfChange = (fCurrentValue - m_fPreviousValue) / static_cast<float>(ulDifference);
+        }
     }
-
-
-    //
-    // Do the division if the denominator is non zero.
-    //
-    if (ulDifference != 0)
-    {
-        fRateOfChange = (fCurrentValue - m_fPreviousValue) / static_cast<float>(ulDifference);
-    }
-
+    
     //
     // Update the previous timestamp and unit values for the caller 
     // as now the provious timestamp and unit values are the current values upon input
